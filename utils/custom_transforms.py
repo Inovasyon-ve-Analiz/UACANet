@@ -12,17 +12,13 @@ class resize:
         self.size = size
 
     def __call__(self, sample):
-        self.size = tuple(self.size)
         if 'image' in sample.keys():
-            # print(sample['image'].dtype,"*"*20)
-
-            sample['image'] = cv2.resize(sample['image'], self.size[:2])
-            # print(sample['image'].dtype)
-            # sample['image'] = sample['image'].resize(self.size, Image.BILINEAR)
+            sample['image'] = sample['image'].resize(self.size, Image.BILINEAR)
         if 'gt' in sample.keys():
-            sample['gt'] = cv2.resize(sample['gt'], self.size[:2])
-            # sample['gt'] = sample['gt'].resize(self.size, Image.BILINEAR)
-        
+            sample['gt'] = sample['gt'].resize(self.size, Image.BILINEAR)
+        if 'mask' in sample.keys():
+            sample['mask'] = sample['mask'].resize(self.size, Image.BILINEAR)
+
         return sample
 
 class random_scale_crop:
@@ -30,43 +26,19 @@ class random_scale_crop:
         self.range = range
 
     def __call__(self, sample):
-        scale_number = np.random.random()
-        scale = scale_number * (self.range[1] - self.range[0]) + self.range[0]
+        scale = np.random.random() * (self.range[1] - self.range[0]) + self.range[0]
         if np.random.random() < 0.5:
             for key in sample.keys():
-                if key in ['image', 'gt']:
-                    img = sample[key]
-                    base_size = img.shape
+                if key in ['image', 'gt', 'contour']:
+                    base_size = sample[key].size
+
                     scale_size = tuple((np.array(base_size) * scale).round().astype(int))
-                    if scale_number >= 0.5:
-                        img = cv2.resize(img, (scale_size[0],scale_size[1]))
-                        if key == "image":
-                            img = img[(img.shape[0] - base_size[1]) // 2:(img.shape[0] + base_size[0]) // 2, (img.shape[1] - base_size[1]) // 2:(img.shape[1] + base_size[1]) // 2,:]
-                        else:
-                            img = img[(img.shape[0] - base_size[1]) // 2:(img.shape[0] + base_size[0]) // 2, (img.shape[1] - base_size[1]) // 2:(img.shape[1] + base_size[1]) // 2]
-                      
-                    else:
-                        if key == "image":
-                            dtype = np.float32
-                            img = cv2.resize(img, (scale_size[0],scale_size[1]))
-                            zeros = np.zeros((base_size[0],base_size[1],3), dtype=dtype)
-                            zeros[(base_size[0] - img.shape[0]) // 2:(img.shape[0] + base_size[0]) // 2, (base_size[1] - img.shape[1]) // 2:(img.shape[1] + base_size[1]) // 2,:] += img
-                            img = zeros.copy()
-                        else:
-                            dtype = np.uint8
-                            img = cv2.resize(img, (scale_size[0],scale_size[1]))
-                            zeros = np.zeros((base_size[0],base_size[1]), dtype=dtype)
-                            zeros[(base_size[0] - img.shape[0]) // 2:(img.shape[0] + base_size[0]) // 2, (base_size[1] - img.shape[1]) // 2:(img.shape[1] + base_size[1]) // 2] += img
-                            img = zeros.copy()
-                        
-                    
-                        # base_size = sample[key].size
-                        # scale_size = tuple((np.array(base_size) * scale).round().astype(int))
-                        # sample[key] = sample[key].resize(scale_size)
-                        # sample[key] = sample[key].crop(((sample[key].size[0] - base_size[0]) // 2,
-                        #                                 (sample[key].size[1] - base_size[1]) // 2,
-                        #                                 (sample[key].size[0] + base_size[0]) // 2,
-                        #                                 (sample[key].size[1] + base_size[1]) // 2))
+                    sample[key] = sample[key].resize(scale_size)
+
+                    sample[key] = sample[key].crop(((sample[key].size[0] - base_size[0]) // 2,
+                                                    (sample[key].size[1] - base_size[1]) // 2,
+                                                    (sample[key].size[0] + base_size[0]) // 2,
+                                                    (sample[key].size[1] + base_size[1]) // 2))
 
         return sample
 
@@ -80,12 +52,13 @@ class random_flip:
         ud = np.random.random() < 0.5 and self.ud is True
 
         for key in sample.keys():
-            if key in ['image', 'gt']:
-
+            if key in ['image', 'gt', 'contour']:
+                sample[key] = np.array(sample[key])
                 if lr:
                     sample[key] = np.fliplr(sample[key])
                 if ud:
                     sample[key] = np.flipud(sample[key])
+                sample[key] = Image.fromarray(sample[key])
 
         return sample
 
@@ -94,29 +67,21 @@ class random_rotate:
         self.range = range
         self.interval = interval
 
-    def rotate_image(self, image, angle):
-        image_center = tuple(np.array(image.shape[1::-1]) / 2)
-        rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-        result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
-        return result
-
     def __call__(self, sample):
         rot = (np.random.randint(*self.range) // self.interval) * self.interval
         rot = rot + 360 if rot < 0 else rot
 
         if np.random.random() < 0.5:
             for key in sample.keys():
-                if key in ['image', 'gt']:
-                    base_size = sample[key].shape[:2]
+                if key in ['image', 'gt', 'contour']:
+                    base_size = sample[key].size
 
-                    sample[key] = self.rotate_image(sample[key],rot)
-                    sample[key] = sample[key][(sample[key].shape[0] - base_size[0]) // 2:(sample[key].shape[0] + base_size[0]) // 2,
-                        (sample[key].shape[1] - base_size[1]) // 2:(sample[key].shape[1] + base_size[1]) // 2]
+                    sample[key] = sample[key].rotate(rot, expand=True)
 
-                    # sample[key] = sample[key].crop(((sample[key].size[0] - base_size[0]) // 2,
-                    #                                 (sample[key].size[1] - base_size[1]) // 2,
-                    #                                 (sample[key].size[0] + base_size[0]) // 2,
-                    #                                 (sample[key].size[1] + base_size[1]) // 2))
+                    sample[key] = sample[key].crop(((sample[key].size[0] - base_size[0]) // 2,
+                                                    (sample[key].size[1] - base_size[1]) // 2,
+                                                    (sample[key].size[0] + base_size[0]) // 2,
+                                                    (sample[key].size[1] + base_size[1]) // 2))
 
         return sample
 
@@ -131,15 +96,15 @@ class random_image_enhance:
             self.enhance_method.append(ImageEnhance.Sharpness)
 
     def __call__(self, sample):
-        # image = sample['image']
-        # np.random.shuffle(self.enhance_method)
+        image = sample['image']
+        np.random.shuffle(self.enhance_method)
 
-        # for method in self.enhance_method:
-        #     if np.random.random() > 0.5:
-        #         enhancer = method(image)
-        #         factor = float(1 + np.random.random() / 10)
-        #         image = enhancer.enhance(factor)
-        # sample['image'] = image
+        for method in self.enhance_method:
+            if np.random.random() > 0.5:
+                enhancer = method(image)
+                factor = float(1 + np.random.random() / 10)
+                image = enhancer.enhance(factor)
+        sample['image'] = image
 
         return sample
 
@@ -149,7 +114,7 @@ class random_dilation_erosion:
 
     def __call__(self, sample):
         gt = sample['gt']
-        # gt = np.array(gt)
+        gt = np.array(gt)
         key = np.random.random()
         # kernel = np.ones(tuple([np.random.randint(*self.kernel_range)]) * 2, dtype=np.uint8)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (np.random.randint(*self.kernel_range), ) * 2)
@@ -158,7 +123,7 @@ class random_dilation_erosion:
         elif 1/3 <= key < 2/3:
             gt = cv2.erode(gt, kernel)
 
-        sample['gt'] = gt
+        sample['gt'] = Image.fromarray(gt)
 
         return sample
 
@@ -167,11 +132,10 @@ class random_gaussian_blur:
         pass
 
     def __call__(self, sample):
-        # image = sample['image']
-        # if np.random.random() < 0.5:
-        #     image = cv2.GaussianBlur(image, (11,11))
-        #     image.filter(ImageFilter.GaussianBlur(radius=np.random.random()))
-        # sample['image'] = image
+        image = sample['image']
+        if np.random.random() < 0.5:
+            image = image.filter(ImageFilter.GaussianBlur(radius=np.random.random()))
+        sample['image'] = image
 
         return sample
 
@@ -180,12 +144,10 @@ class tonumpy:
         pass
 
     def __call__(self, sample):
-        image = sample['image']
-        gt = sample['gt']
+        image, gt = sample['image'], sample['gt']
+
         sample['image'] = np.array(image, dtype=np.float32)
         sample['gt'] = np.array(gt, dtype=np.float32)
-        # sample['image'].dtype=np.float32
-        # sample['gt'].dtype=np.float32
         
         return sample
 
@@ -196,7 +158,7 @@ class normalize:
 
     def __call__(self, sample):
         image, gt = sample['image'], sample['gt']
-        image /= 2**16
+        image /= 255
         image -= self.mean
         image /= self.std
 
@@ -212,6 +174,7 @@ class totensor:
 
     def __call__(self, sample):
         image, gt = sample['image'], sample['gt']
+
         image = image.transpose((2, 0, 1))
         image = torch.from_numpy(image).float()
         
@@ -220,6 +183,5 @@ class totensor:
 
         sample['image'] = image
         sample['gt'] = gt
-        # print(image.shape)
-        # print(gt.shape)
+
         return sample
