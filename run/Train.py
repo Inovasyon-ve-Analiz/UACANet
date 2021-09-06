@@ -41,7 +41,7 @@ def train(opt, args):
         dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(args.pretrained_path)]
         n = max([int(i) for i in dirlist])
         print(args.inme, n)
-        model_dir = os.path.join(opt.pretrained_path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")
+        model_dir = os.path.join(args.pretrained_path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")
         model.load_state_dict(torch.load(model_dir))
         model.cuda()
         model.eval()
@@ -86,8 +86,6 @@ def train(opt, args):
         if epoch % opt.Train.checkpoint_epoch == 0:
             torch.save(model.state_dict(),
                        os.path.join(opt.Train.train_save, "UACANet_" + args.inme + "_" + str(epoch + n) + '_Epoch.pth'))
-            shutil.copy("/content/UACANet/snapshots/UACANet-L/" + "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth",
-                        os.path.join(path, "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth"))
 
     print('#' * 20, 'Train done', '#' * 20)
 
