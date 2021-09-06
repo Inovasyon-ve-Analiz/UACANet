@@ -25,7 +25,7 @@ def _args():
     parser.add_argument('--pretrained', type=int, default=1)
     parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
-    parser.add_argument('--dicom', type=int, default=0))
+    parser.add_argument('--dicom', type=int, default=0)
     parser.add_argument('--pretrained_path', type=str, default='/kaggle/input/models', help='path for pretraining')
     parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
     return parser.parse_args()
