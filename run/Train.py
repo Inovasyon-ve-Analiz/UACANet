@@ -21,23 +21,28 @@ from utils.utils import *
 
 def _args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='configs/xomcnet.yaml')
+    parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--pretrained', type=int, default=1)
     parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
-    parser.add_argument('--dicom', type=int, default=0)
+    parser.add_argument('--dicom', type=int, default=0))
+    parser.add_argument('--pretrained_epoch', type=int, default=100, help='epoch for pretraining')
+    parser.add_argument('--pretrained_path', type=str, default='/kaggle/input/models', help='path for pretraining')
+    parser.add_argument('--train_save', type=str, default='/kaggle/working/TransFuse/snapshots')
     return parser.parse_args()
 
 def train(opt, args):
     dataset = args.dataset
-    path = os.path.join("/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/UACANet", dataset, args.inme)
+    path = os.path.join("/kaggle/working/UACANet", dataset, args.inme)
     n = 0
     model = eval(opt.Model.name)(opt.Model).cuda()
 
     if args.pretrained:
-        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(path)]
+        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(args.pretrained_path)]
         n = max([int(i) for i in dirlist])
-        model.load_state_dict(torch.load(os.path.join(path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")))
+        print(args.inme, n)
+        model_dir = os.path.join(opt.pretrained_path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")
+        model.load_state_dict(torch.load(model_dir))
         model.cuda()
         model.eval()
 
