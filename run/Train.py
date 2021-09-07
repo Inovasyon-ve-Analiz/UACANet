@@ -30,7 +30,7 @@ def _args():
 
 def train(opt, args):
     dataset = args.dataset
-    path = os.path.join("/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/UACANet", dataset, args.inme)
+    path = os.path.join("/kaggle/working/models", dataset, args.inme)
     n = 0
     model = eval(opt.Model.name)(opt.Model).cuda()
 
@@ -81,8 +81,6 @@ def train(opt, args):
         if epoch % opt.Train.checkpoint_epoch == 0:
             torch.save(model.state_dict(),
                        os.path.join(opt.Train.train_save, "UACANet_" + args.inme + "_" + str(epoch + n) + '_Epoch.pth'))
-            shutil.copy("/content/UACANet/snapshots/UACANet-L/" + "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth",
-                        os.path.join(path, "UACANet_" + args.inme + "_" + str(epoch + n) + "_Epoch.pth"))
 
     print('#' * 20, 'Train done', '#' * 20)
 
