@@ -23,16 +23,17 @@ from utils.utils import *
 def _args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
-    parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
-    parser.add_argument('--epoch', type=int, default=100) pth_path
-    parser.add_argument('--pth_path', type=str, default="/kaggle/working/models")
+    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--model_path', type=str, default="/kaggle/working/models")
+    parser.add_argument('--dicom', type=int, default=0)
+
     
     return parser.parse_args()
 
 def test(opt, args):
     model = eval(opt.Model.name)(opt.Model)
-    pth_path = os.path.join(opt.Test.pth_path, args.dataset, args.inme, "UACANet_" + args.inme + "_" + str(args.epoch) + "_Epoch.pth")
+    pth_path = os.path.join(args.model_path, "UACANet_" + args.inme + "_" + str(args.epoch) + "_Epoch.pth")
     model.load_state_dict(torch.load(pth_path))
     model.cuda()
     model.eval()    
@@ -69,6 +70,6 @@ def test(opt, args):
 if __name__ == "__main__":
     args = _args()
     opt = ed(yaml.load(open(args.config), yaml.FullLoader))
-    if "dicom" in args.dataset:
+    if args.dicom == 1:
         opt.Test.transforms.resize.size = [352, 352, 3]
     test(opt, args)
