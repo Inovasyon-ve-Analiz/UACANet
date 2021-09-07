@@ -95,7 +95,7 @@ def calculateIoU(groundTruthMask, predictedMask, showSteps = False):
 
 if __name__ == "__main__":
     args = _args()
-    path = os.path.join("/content", "new_dataset", args.inme, "test")
+    path = os.path.join("/kaggle/working", "new_dataset", args.inme, "test")
     file_names = sorted(os.listdir(os.path.join(path, "RESULTS")))
     for f in file_names:
         groundtruthMask = loadMask(os.path.join(path, "MASKS", f))
