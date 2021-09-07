@@ -23,21 +23,20 @@ def _args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--pretrained', type=int, default=1)
-    parser.add_argument('--dataset', type=str, default="new_dataset")
+    parser.add_argument('--model_path', type=str, default="/kaggle/working/models")
     parser.add_argument('--inme', type=str, default="ISKEMI")
     parser.add_argument('--dicom', type=int, default=0)
     return parser.parse_args()
 
 def train(opt, args):
-    dataset = args.dataset
-    path = os.path.join("/kaggle/working/models", dataset, args.inme)
     n = 0
     model = eval(opt.Model.name)(opt.Model).cuda()
 
     if args.pretrained:
-        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(path)]
+        dirlist = [v.split(".")[0].split("_")[-2] for v in os.listdir(args.model_path)]
         n = max([int(i) for i in dirlist])
-        model.load_state_dict(torch.load(os.path.join(path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")))
+        pth_path = os.path.join(args.model_path, "UACANet_" + args.inme + "_" + str(n) + "_Epoch.pth")
+        model.load_state_dict(torch.load(pth_path))
         model.cuda()
         model.eval()
 
