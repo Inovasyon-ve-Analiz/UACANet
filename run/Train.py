@@ -21,7 +21,7 @@ from utils.utils import *
 
 def _args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='configs/xomcnet.yaml')
+    parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--pretrained', type=int, default=1)
     parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
