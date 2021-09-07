@@ -23,7 +23,7 @@ def _args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--pretrained', type=int, default=1)
-    parser.add_argument('--model_path', type=str, default="/kaggle/working/models")
+    parser.add_argument('--model_path', type=str, default="/kaggle/input/models")
     parser.add_argument('--inme', type=str, default="ISKEMI")
     parser.add_argument('--dicom', type=int, default=0)
     return parser.parse_args()
