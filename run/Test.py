@@ -22,7 +22,7 @@ from utils.utils import *
 
 def _args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', type=str, default='configs/xnet.yaml')
+    parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
     parser.add_argument('--epoch', type=int, default=100)
