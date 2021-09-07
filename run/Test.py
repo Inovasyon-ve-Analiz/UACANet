@@ -25,7 +25,9 @@ def _args():
     parser.add_argument('--config', type=str, default='configs/UACANet-L.yaml')
     parser.add_argument('--dataset', type=str, default="new_dataset")
     parser.add_argument('--inme', type=str, default="ISKEMI")
-    parser.add_argument('--epoch', type=int, default=100)
+    parser.add_argument('--epoch', type=int, default=100) pth_path
+    parser.add_argument('--pth_path', type=str, default="/kaggle/working/models")
+    
     return parser.parse_args()
 
 def test(opt, args):
