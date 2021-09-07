@@ -15,7 +15,7 @@ Train:
     num_workers: 8
     pin_memory: True
     checkpoint_epoch: 2
-    train_path: "/content/new_dataset"
+    train_path: "/kaggle/working/new_dataset"
     train_save: "snapshots/UACANet-L"
     transforms:
         resize: 
@@ -37,9 +37,9 @@ Train:
             std: [0.229, 0.224, 0.225]
         totensor: NULL
 Test:
-    gt_path: "/content/new_dataset"
-    out_path: "/content/new_dataset"
-    pth_path: "/content/drive/MyDrive/İNAN/SağlıktaYapayZeka/UACANet"
+    gt_path: "/kaggle/working/new_dataset"
+    out_path: "/kaggle/working/new_dataset"
+    pth_path: "/kaggle/input/models"
     datasets: ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']
     num_workers: 8
     pin_memory: True
