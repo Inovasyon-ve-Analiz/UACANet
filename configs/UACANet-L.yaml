@@ -4,7 +4,7 @@ Model:
     output_stride: 16
     pretrained: True
 Train:
-    epoch: 100
+    epoch: 300
     lr: 0.0001
     batchsize: 16
     clip: 0.5
