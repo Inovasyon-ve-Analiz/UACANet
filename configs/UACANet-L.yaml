@@ -14,7 +14,7 @@ Train:
     shuffle: True
     num_workers: 8
     pin_memory: True
-    checkpoint_epoch: 2
+    checkpoint_epoch: 5
     train_path: "/kaggle/working/new_dataset"
     train_save: "snapshots/UACANet-L"
     transforms:
